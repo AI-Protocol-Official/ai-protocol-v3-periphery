@@ -1,0 +1,17 @@
+{
+  "name": "@ai-protocol/hardhat-node",
+  "version": "1.0.0",
+  "description": "Local hardhat nodee",
+  "main": "index.js",
+  "scripts": {
+    "run": "hardhat node"
+  },
+  "engines": {
+    "node": ">=16.20.0"
+  },
+  "author": "Basil Gorin",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.17.4"
+  }
+}
