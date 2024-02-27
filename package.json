@@ -33,6 +33,7 @@
     "@openzeppelin/contracts-upgradeable": "4.4.1",
     "@openzeppelin/test-helpers": "github:vgorin/openzeppelin-test-helpers",
     "@ai-protocol/v3-core": "github:AI-Protocol-Official/ai-protocol-v3-core",
+    "@ai-protocol/v2": "github:AI-Protocol-Official/ai-protocol-v2-monorepo",
     "chai": "^4.4.1",
     "chai-bn": "^0.3.1",
     "chai-subset": "^1.6.0",

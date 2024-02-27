@@ -23,14 +23,14 @@ const {
 	random_address,
 	random_bn,
 	ETH,
-} = require("@ai-protocol/v3-core/test/include/bn_utils");
+} = require("../include/bn_utils");
 
 // ACL features and roles
 const {
 	not,
 	ROLE_DATA_ROOT_MANAGER,
 	FEATURE_CLAIM_ACTIVE,
-} = require("@ai-protocol/v3-core/test/include/features_roles");
+} = require("../include/features_roles");
 
 // enable chai-subset to allow containSubset instead of deep equals, see https://www.chaijs.com/plugins/chai-subset/
 require("chai").use(require("chai-subset"));
@@ -176,6 +176,17 @@ contract("Leaderboard Reward System", function(accounts) {
 					"nothing to claim"
 				);
 			});
+			it('fails after "ClaimedRewards" reset', async function() {
+				await ali.transfer(rewardSystem.address, ETH, {from: a0});
+				const proof = tree.getHexProof(leaves[0]);
+				await rewardSystem.resetClaimedRewards({from: a0});
+				await expectRevert(rewardSystem.claimReward(
+						rewardList[0].to,
+						rewardList[0].totalReward,
+						proof),
+					"invalid request"
+				);
+			});
 			describe("success otherwise", function() {
 				beforeEach(async function() {
 					await ali.transfer(rewardSystem.address, ETH, {from: a0});
@@ -204,6 +215,12 @@ contract("Leaderboard Reward System", function(accounts) {
 
 					expect(await rewardSystem.claimedReward(rewardList[0].to)).to.be.bignumber.that.equals(new BN(rewardList[0].totalReward));
 				});
+				it("claimed reward amount post reward claim set to zero if reset", async function() {
+					const proof = tree.getHexProof(leaves[0]);
+					await rewardSystem.claimReward(rewardList[0].to, rewardList[0].totalReward, proof, {from: a0});
+					await rewardSystem.resetClaimedRewards({from: a0});
+					expect(await rewardSystem.claimedReward(rewardList[0].to)).to.be.bignumber.that.equals("0");
+				});
 				it("'ERC20RewardClaimed' event is emitted", async function() {
 					const proof = tree.getHexProof(leaves[0]);
 					const receipt = await rewardSystem.claimReward(rewardList[0].to, rewardList[0].totalReward, proof);
@@ -214,6 +231,15 @@ contract("Leaderboard Reward System", function(accounts) {
 					});
 				});
 			});
+		});
+		describe("resetClaimedRewards", function() {
+			let receipt;
+			beforeEach(async function() {
+				receipt = await rewardSystem.resetClaimedRewards({from: a0});
+			});
+			it('emits "ClaimedRewardsReset" event', async function() {
+				expectEvent(receipt, "ClaimedRewardsReset", {size: "2"})
+			})
 		});
 	});
 	describe("eth reward system", function() {
@@ -328,6 +354,17 @@ contract("Leaderboard Reward System", function(accounts) {
 					"nothing to claim"
 				);
 			});
+			it('fails after "ClaimedRewards" reset', async function() {
+				await web3.eth.sendTransaction({to: rewardSystem.address, value: ETH, from: a0});
+				const proof = tree.getHexProof(leaves[0]);
+				await rewardSystem.resetClaimedRewards({from: a0});
+				await expectRevert(rewardSystem.claimReward(
+						rewardList[0].to,
+						rewardList[0].totalReward,
+						proof),
+					"invalid request"
+				);
+			});
 			describe("success otherwise", function() {
 				beforeEach(async function() {
 					await web3.eth.sendTransaction({to: rewardSystem.address, value: ETH, from: a0});
@@ -357,6 +394,12 @@ contract("Leaderboard Reward System", function(accounts) {
 					await rewardSystem.claimReward(rewardList[0].to, rewardList[0].totalReward, proof, {from: a0});
 
 					expect(await rewardSystem.claimedReward(rewardList[0].to)).to.be.bignumber.that.equals(new BN(rewardList[0].totalReward));
+				});
+				it("claimed reward amount post reward claim set to zero if reset", async function() {
+					const proof = tree.getHexProof(leaves[0]);
+					await rewardSystem.claimReward(rewardList[0].to, rewardList[0].totalReward, proof, {from: a0});
+					await rewardSystem.resetClaimedRewards({from: a0});
+					expect(await rewardSystem.claimedReward(rewardList[0].to)).to.be.bignumber.that.equals("0");
 				});
 				it("'EthRewardClaimed' event is emitted", async function() {
 					const proof = tree.getHexProof(leaves[0]);

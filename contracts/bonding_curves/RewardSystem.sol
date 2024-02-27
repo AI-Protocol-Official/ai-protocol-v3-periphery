@@ -27,8 +27,10 @@ contract RewardSystem is UpgradeableAccessControl {
 	// and allows to store it in a single 256-bits storage slot on-chain
 	bytes32 public root;
 
-	// userAddress => total claimed reward
-	mapping(address => uint256) public claimedReward;
+	// maps userAddress => total claimed reward
+	// mapping packed into array, the last array element is "active"
+	// while the first n-1 elements are "archive" and not used in the contract
+	mapping(address => uint256) [] private claimedRewards;
 
 	// ERC20 reward token address
 	// reward system type:
@@ -88,6 +90,13 @@ contract RewardSystem is UpgradeableAccessControl {
 	event PaymentReceived(uint256 value);
 
 	/**
+	 * @dev Fired in resetClaimedRewards()
+	 *
+	 * @param size new size of the claimedRewards array
+	 */
+	event ClaimedRewardsReset(uint256 size);
+
+	/**
 	 * @dev "Constructor replacement" for a smart contract with a delayed initialization (post-deployment initialization)
 	 *
 	 * @param _erc20RewardToken ERC20 reward token address
@@ -100,12 +109,76 @@ contract RewardSystem is UpgradeableAccessControl {
 
 		// zero address is OK meaning we use ETH reward mode
 		erc20RewardToken = ERC20(_erc20RewardToken);
+
+		// initialize first storage slot for claimedRewards
+		claimedRewards.push();
 	}
 
 	// Function to receive Ether. msg.data must be empty
 	receive() external payable {
 		require(rewardSystemType(), "ETH payments not supported");
 		emit PaymentReceived(msg.value);
+	}
+
+	/**
+	 * @dev Read claimedRewards at the "active" last index for a given address
+	 *
+	 * @param userAddress address to update the value for
+	 * @return total rewards paid or to be paid
+	 */
+	function claimedReward(address userAddress) public view returns(uint256) {
+		// read the data from the "active" last storage slot and return
+		return claimedReward(claimedRewards.length - 1, userAddress);
+	}
+
+	/**
+	 * @dev Read claimedRewards at a given index for a given address
+	 *
+	 * @param index zero-based storage index
+	 * @param userAddress address to update the value for
+	 * @return total rewards paid or to be paid
+	 */
+	function claimedReward(uint256 index, address userAddress) public view returns(uint256) {
+		// read the data from the "index" storage slot and return
+		return claimedRewards[index][userAddress];
+	}
+
+	/**
+	 * @dev Update claimedRewards at the "active" last index for a given address
+	 *
+	 * @param userAddress address to update the value for
+	 * @param value the reward value to set
+	 */
+	function __updateClaimedReward(address userAddress, uint256 value) private {
+		// update the data at the "active" last storage slot
+		__updateClaimedReward(claimedRewards.length - 1, userAddress, value);
+	}
+
+	/**
+	 * @dev Update claimedRewards at a given index for a given address
+	 *
+	 * @param index zero-based storage index
+	 * @param userAddress address to update the value for
+	 * @param value the reward value to set
+	 */
+	function __updateClaimedReward(uint256 index, address userAddress, uint256 value) private {
+		// update the data at the "index" storage slot
+		claimedRewards[index][userAddress] = value;
+	}
+
+	/**
+	 * @dev Restricted access function to reset claimedRewards mapping;
+	 *      technically implemented by moving mapping storage pointer to free space
+	 */
+	function resetClaimedRewards() public {
+		// reset the Merkle root; this also ensures we have "ROLE_DATA_ROOT_MANAGER" role
+		setInputDataRoot(bytes32(0));
+
+		// move the claimedRewards storage to the next slot
+		claimedRewards.push();
+
+		// emit an event
+		emit ClaimedRewardsReset(claimedRewards.length);
 	}
 
 	/**
@@ -137,11 +210,12 @@ contract RewardSystem is UpgradeableAccessControl {
 		require(isClaimValid(_to, _totalReward, _proof), "invalid request");
 
 		// check user has reward to claim
-		require(claimedReward[_to] < _totalReward, "nothing to claim");
-		uint256 claimableAmount = _totalReward - claimedReward[_to];
+		uint256 claimed = claimedReward(_to);
+		require(claimed < _totalReward, "nothing to claim");
+		uint256 claimableAmount = _totalReward - claimed;
 
 		// update reward details
-		claimedReward[_to] += claimableAmount;
+		__updateClaimedReward(_to, _totalReward);
 		totalClaimedReward += claimableAmount;
 
 		if (rewardSystemType()) {

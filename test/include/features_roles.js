@@ -23,7 +23,7 @@ const FEATURE_NONE = 0x0000_0000;
 // negates the role (permission set) provided
 function not(...roles) {
 	let roles_sum = new BN(0);
-	for(let role of roles) {
+	for (let role of roles) {
 		// Note: BN.js has undocumented ugly behaviour to return a reference
 		// to the BN passed into the constructor instead of creating a new instance
 		roles_sum = roles_sum.or(new BN(role));
@@ -324,9 +324,26 @@ const ROLE_DATA_ROOT_MANAGER = 0x0001_0000;
 
 
 // Start: ===== Hive Registry =====
+// FEATURE_ALLOW_HIVE_CREATION must be enabled in order to allow user to create/launch hive
+const FEATURE_ALLOW_HIVE_CREATION = 0x0000_0001;
+
+// FEATURE_ALLOW_ASSET_LINKING must be enabled in order to allow user to link asset with hive
+const FEATURE_ALLOW_ASSET_LINKING = 0x0000_0002;
+
+// FEATURE_ALLOW_ASSET_UNLINKING must be enabled in order to allow user to unlink asset from hive
+const FEATURE_ALLOW_ASSET_UNLINKING = 0x0000_0004;
 
 // ROLE_DPT_REGISTRAR allows to link/unlink DPT with Hive's
 const ROLE_DPT_REGISTRAR = 0x0001_0000;
+
+// ROLE_POD_WHITELIST_MANAGER allows to whitelist/delist pods
+const ROLE_POD_WHITELIST_MANAGER = 0x0002_0000;
+
+// ROLE_CATEGORY_MANAGER allows to add new global category
+const ROLE_CATEGORY_MANAGER = 0x0004_0000;
+
+// ROLE_CATEGORY_MANAGER allows to update ERC20 token against hive
+const ROLE_HIVE_TOKEN_MANAGER = 0x0008_0000;
 
 // End: ===== Hive Registry=====
 
@@ -371,6 +388,9 @@ module.exports = {
 	FEATURE_ALLOW_PAUSED_DEPLOYMENTS,
 	FEATURE_ALLOW_EXCLUSIVE_BUY,
 	FEATURE_CLAIM_ACTIVE,
+	FEATURE_ALLOW_HIVE_CREATION,
+	FEATURE_ALLOW_ASSET_LINKING,
+	FEATURE_ALLOW_ASSET_UNLINKING,
 	ROLE_TOKEN_CREATOR,
 	ROLE_TOKEN_DESTROYER,
 	ROLE_ERC20_RECEIVER,
@@ -411,4 +431,7 @@ module.exports = {
 	ROLE_DISTRIBUTION_MANAGER,
 	ROLE_DATA_ROOT_MANAGER,
 	ROLE_DPT_REGISTRAR,
+	ROLE_POD_WHITELIST_MANAGER,
+	ROLE_CATEGORY_MANAGER,
+	ROLE_HIVE_TOKEN_MANAGER,
 };

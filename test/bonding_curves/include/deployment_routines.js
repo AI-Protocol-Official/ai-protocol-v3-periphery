@@ -658,13 +658,13 @@ async function deploy_erc20_reward_system(a0, token_address) {
  * @param a0 deployer address, required
  * @returns hive registry instance
  */
-async function deploy_hive_registry(a0) {
+async function deploy_hive_registry_pure(a0, persona_addr, inft_addr, staking_addr) {
 	// deploy implementation
 	const HiveRegistry = artifacts.require("HiveRegistryV1");
 	const impl = await HiveRegistry.new({from: a0});
 
 	// prepare the proxy initialization call bytes
-	const init_data = impl.contract.methods.postConstruct().encodeABI();
+	const init_data = impl.contract.methods.postConstruct(persona_addr, inft_addr, staking_addr).encodeABI();
 
 	// deploy the ERC1967 proxy
 	const ERC1967Proxy = artifacts.require("ERC1967Proxy");
@@ -690,5 +690,5 @@ module.exports = {
 	deploy_holders_rewards_distributor,
 	deploy_eth_reward_system,
 	deploy_erc20_reward_system,
-	deploy_hive_registry,
+	deploy_hive_registry_pure,
 };

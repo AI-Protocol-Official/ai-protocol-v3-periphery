@@ -370,6 +370,11 @@ module.exports = {
 			// Contracts required for tests only
 			"@ai-protocol/v3-core/contracts/token/AliERC20v2.sol",
 			"@ai-protocol/v3-core/contracts/mocks/RoyalERC721Mock.sol",
+			"@ai-protocol/v3-core/contracts/protocol/IntelligentNFTv2.sol",
+			"@ai-protocol/v3-core/contracts/protocol/IntelliLinkerV2.sol",
+			"@ai-protocol/v3-core/contracts/protocol/IntelliLinkerV3.sol",
+			"@ai-protocol/v3-core/contracts/token/PersonalityPodERC721.sol",
+			"@ai-protocol/v2/contracts/mocks/NFTStakingMock.sol",
 		],
 	},
 
@@ -423,6 +428,18 @@ module.exports = {
 		SophiaBeingERC721: {
 			"mainnet": "0x75c804fFb01b16B7592a0B9644835244E2140728",
 			"goerli":  "0xC6729C6cFc6B872acF641EB3EA628C9F038e5ABb",
+		},
+		PersonalityPodERC721: {
+			"mainnet": "0xDd70AF84BA86F29bf437756B655110D134b5651C",
+			"goerli":  "0x785b1246E57b9f72C6bb19e5aC3178aEffb0Fe73",
+		},
+		IntelligentNFTv2: {
+			"mainnet": "0xa189121eE045AEAA8DA80b72F7a1132e3B216237",
+			"goerli":  "0x63d49c8D35C9fB523515756337cef0991B304696",
+		},
+		PersonalityStaking: {
+			"mainnet": "0xAbEffb353dae4A177057e9a3e4A663386cF54758",
+			"goerli":  "0x70d0f35dd27BC79303A2eAfD30db419742d6FaF9",
 		},
 	},
 }
